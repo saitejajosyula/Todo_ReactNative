@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Button, Text, ScrollView, StyleSheet, Switch,Alert , TextInput,TouchableOpacity} from 'react-native'
 import { CheckBox,Card } from 'react-native-elements'
 import Constants from 'expo-constants'
+import DatePicker from "react-native-datepicker";
 
 
 let id = 0
@@ -11,7 +12,8 @@ let id = 0
 const Todo = props => (
   <View style={styles.todoContainer}>
     <CheckBox checked={props.todo.checked} onPress={props.onTodoClick}  />
-    <Text style={{fontSize:20,fontWeight:'300',color:'black'}}>{props.todo.text}</Text>
+    <Text style={{fontSize:20,fontWeight:'300',color:'white'}}>{props.todo.text}</Text>
+    <Text style = {{color:'white'}}> {props.todo.dueDate} </Text>
     <TouchableOpacity style={[styles.button]} onPress={props.onDelete}>
        <Text style={[styles.buttontext],[styles.removebutton]}>Remove</Text>
     </TouchableOpacity>
@@ -25,15 +27,16 @@ export default class App extends React.Component {
     this.state = {
       todos: [],
       text: '',
+      dueDate:"",
     }
   }
 
-  addTodo(text) {
+  addTodo(text, date) {
     id++
     this.setState({
       todos: [
         ...this.state.todos,
-        {id: id, text: text, checked: false, dueDate:Date.now()},
+        {id: id, text: text, checked: false, dueDate:date},
       ],
       text: '',
     })
@@ -42,6 +45,10 @@ export default class App extends React.Component {
   takeInput = (input) => {
       this.setState({ text: input })
   }
+
+  dateChange = (date) => {
+    this.setState({ dueDate: date });
+  };
 
   removeTodo(id) {
     this.setState({
@@ -74,18 +81,48 @@ export default class App extends React.Component {
           onChangeText={this.takeInput}
           value={this.state.text}
         />
-        <TouchableOpacity style={[styles.butt,styles]} onPress={() => this.addTodo(this.state.text)}>
-         <Text style={[styles.buttontext]}>ADD</Text>
-        </TouchableOpacity>
+        <View style={[styles.appdate]}>
+          <DatePicker
+            style={{ width: 200 }}
+            date={this.state.dueDate}
+            mode="date"
+            placeholder="select date"
+            format="DD-MM-YYYY"
+            minDate="01-01-2020"
+            maxDate="01-01-2100"
+            confirmBtnText="Confirm"
+            cancelBtnText="Cancel"
+            customStyles={{
+              dateIcon: {
+                position: "absolute",
+                left: 0,
+                top: 4,
+                marginLeft: 0,
+              },
+              dateInput: {
+                marginLeft: 36,
+              },
+              // ... You can check the source to find the other keys.
+            }}
+            onDateChange={this.dateChange}
+          />
+          <TouchableOpacity
+            style={[styles.addbutton, styles]}
+            onPress={() => this.addTodo(this.state.text, this.state.dueDate)}
+          >
+            <Text style={[styles.buttontext]}>ADD</Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView>
           {this.state.todos.map(todo => (
-            <Card style={styles.card}>
+            // <Card style={styles.card}>
             <Todo
               onTodoClick={() => this.toggleTodo(todo.id)}
               todo={todo}
               onDelete={() => this.removeTodo(todo.id)}
             />
-            </Card>
+            // </Card>
           ))}
 
         </ScrollView>
@@ -110,7 +147,7 @@ const styles = StyleSheet.create({
     
   },
 
-  butt:{
+  addbutton:{
     display: 'flex',
     height: 35,
     borderRadius: 50,
@@ -163,5 +200,10 @@ const styles = StyleSheet.create({
     fontSize:18,
     textTransform: 'lowercase',
     fontWeight:'bold',
+  },
+  appdate: {
+
+    flexDirection: 'row',
+
   }
 })
